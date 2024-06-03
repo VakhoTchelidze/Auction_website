@@ -1,0 +1,35 @@
+<div class="activities">
+    <div class="activities__header">
+      <h2>Artists</h2>
+    </div>
+    {% for artist in artists %}
+      <div class="activities__box">
+          <div class="activities__boxHeader roomListRoom__header">
+
+            <a href="{% url 'user-profile' artist.id %}" class="roomListRoom__author">
+              <p>
+                <b>{{ artist }}
+              </p>
+            </a>
+
+              <div class="avatar  avatar--medium">
+                <img src="{{ artist.avatar.url }}" />
+              </div>
+
+          </div>
+      </div>
+    {% endfor%}
+</div>
+
+
+<!--{% for message in room_messages%}-->
+<!--    <div>-->
+<!--        <small><a href="{% url 'user-profile' message.user.id%}">@{{ message.user }}</a> {{ message.created | timesince }} ago, </small>-->
+<!--        <small>replied to "{{message.room}}"</small>-->
+<!--        <p>{{ message.body }}</p>-->
+<!--        {% if request.user == message.user%}-->
+<!--            <a href="{% url 'delete-message' message.id%}">Delete</a>-->
+<!--        {% endif %}-->
+<!--        <hr>-->
+<!--    </div>-->
+<!--{% endfor%}-->

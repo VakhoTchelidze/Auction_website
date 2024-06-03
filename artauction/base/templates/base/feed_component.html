@@ -1,0 +1,19 @@
+<div>
+  {% for item in items %}
+    <div class="roomListRoom">
+      <a href="{% url 'item' item.id%}">
+        <h2>{{item}}</h2>
+      </a>
+    </div>
+  {% endfor %}
+</div>
+
+<!--<div>-->
+<!--    {% for room in rooms %}-->
+<!--        <a href="{% url 'room' room.id %}"><h1>{{room.id}} {{room.name}}</h1></a>-->
+<!--        {% if request.user == room.host %}-->
+<!--            <a href="{% url 'update-room' room.id %}">Edit</a>-->
+<!--            <a href="{% url 'delete-room' room.id %}">Delete</a>-->
+<!--        {% endif %}-->
+<!--    {% endfor %}-->
+<!--</div>-->

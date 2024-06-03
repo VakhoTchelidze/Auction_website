@@ -1,0 +1,32 @@
+
+<div class="topics">
+    <div class="topics__header">
+          <h2>Browse Categories</h2>
+    </div>
+
+    <ul class="topics__list">
+          <li>
+            <a href="{% url 'home' %}" class="active">All <span>{{categories.count}}</span></a>
+          </li>
+
+          {% for category in categories %}
+              <li>
+                <a href="{% url 'home' %}?q={{ category.name }}">{{ category }}<span>{{ category.active_items_count }}</span></a>
+              </li>
+          {% endfor %}
+    </ul>
+
+
+</div>
+
+
+
+<!--<div>-->
+<!--    <a href="{% url 'home' %}"><b>All</b></a>-->
+<!--</div>-->
+
+<!--{% for topic in topics %}-->
+<!--    <div>-->
+<!--        <a href="{% url 'home' %}?q={{ topic.name }}"><b>{{ topic }}</b></a>-->
+<!--    </div>-->
+<!--{% endfor %}-->

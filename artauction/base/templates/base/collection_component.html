@@ -1,0 +1,13 @@
+<div class="container" style="display: flex; flex-flow: row nowrap; justify-content: space-around;">
+    <div class="row text-left">
+      {% for col_item in collection %}
+        <div class="col-lg-4 col-md-6 mb-4" >
+            <div class="card" style="background: #696d97;">
+<!--                <a  href="{% url 'item' col_item.item.id %}"></a>-->
+                    <img src="{{ col_item.item.picture.url }}" alt="..." class="img-thumbnail">
+
+            </div>
+        </div>
+      {% endfor %}
+    </div>
+</div>

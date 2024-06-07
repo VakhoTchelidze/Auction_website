@@ -1,19 +1,61 @@
-<div>
-  {% for item in items %}
-    <div class="roomListRoom">
-      <a href="{% url 'item' item.id%}">
-        <h2>{{item}}</h2>
-      </a>
+
+<div class="container" style="display: flex; flex-flow: row nowrap; justify-content: space-around;">
+    <div class="row text-left">
+      {% for item in items %}
+        <div class="col-lg-4 col-md-6 mb-4" style="height: 30rem; width: 17rem;">
+            <div class="card h-100" style="background: #696d97;">
+                <a href="{% url 'item' item.id%}">
+                    <img style="width: 100%; height: 10.3rem" class="card-img-center" src="{{ item.picture.url }}">
+                </a>
+                <div class="card-body" style="background: #3f4156;">
+                    <center><h5 class="card-title" style="font-weight: bold; color: white;">{{ item.name }}</h5></center>
+                    <p class="card-text" style="margin: 5px">
+                        <span style="font-size:small; color: white;">Current Bid:</span>
+                        <span style="color: #00ff00; font-weight: bold">${{ item.price }}</span>
+                        <br/>
+                        <span id="timer-{{ forloop.counter }}" class="countdown-timer" style="font-size: small; color: #ff0000;"></span>
+                        <br/>
+                        <span style="font-size: small; display: block; text-overflow: ellipsis; word-wrap: break-word; overflow: hidden; max-height: 7.2em; line-height: 1.8em; margin-top: 10px;">
+                            {{ item.descriptions }}
+                        </span>
+                    </p>
+                </div>
+                <div class="card-footer" style="background: #3f4156;">
+                    <a href="{% url 'item' item.id%}" class="btn btn-lg btn-warning btn-block text-uppercase" style="font-size: 80%; border-radius: 5rem; letter-spacing: .1rem; font-weight: bold; transition: all 0.2s; background-color: #71c6dd;">Check Item</a>
+                </div>
+            </div>
+        </div>
+      {% endfor %}
     </div>
-  {% endfor %}
 </div>
 
-<!--<div>-->
-<!--    {% for room in rooms %}-->
-<!--        <a href="{% url 'room' room.id %}"><h1>{{room.id}} {{room.name}}</h1></a>-->
-<!--        {% if request.user == room.host %}-->
-<!--            <a href="{% url 'update-room' room.id %}">Edit</a>-->
-<!--            <a href="{% url 'delete-room' room.id %}">Delete</a>-->
-<!--        {% endif %}-->
-<!--    {% endfor %}-->
-<!--</div>-->
+<script>
+    function initializeCountdown(elementId, endDate) {
+        const countdownElement = document.getElementById(elementId);
+        const countDownDate = new Date(endDate).getTime();
+
+        const updateCountdown = setInterval(function() {
+            const now = new Date().getTime();
+            const distance = countDownDate - now;
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            if (distance > 0) {
+                countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            } else {
+                clearInterval(updateCountdown);
+                countdownElement.innerHTML = "0d 0h 0m 0s";
+            }
+        }, 1000);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        {% for item in items %}
+            initializeCountdown("timer-{{ forloop.counter }}", "{{ item.bid_end_date|date:'Y-m-d H:i:s' }}");
+        {% endfor %}
+    });
+</script>
+

@@ -1,23 +1,155 @@
 {% extends 'main.html' %}
 
 {% block content %}
-{% load static %}
-    <div>
-        <h1>{{ item }}</h1>
-        <img src="{{ item.picture.url }}" width="100" height="100" style="align: left;">
-        <h2>Description: {{ item.description }}</h2>
-        <h2>Starting Bid: {{ item.price }}$</h2>
-        <h2>Artist: {{ item.artist }}</h2>
-        <h2>Category: {{ item.category }}</h2>
 
-        <h2>Highest Bid: {{ highest_price_bid }}</h2>
+    <style>
+        .home-container {
+            display: grid;
+            grid-template-columns: 1fr 3fr 1fr;
+        }
 
-        <form method="POST" action="">
-            {% csrf_token %}
-            <input type="number" name="bid" placeholder="Enter a number..." step="0.5" required />
-            <button type="submit">Submit</button>
-        </form>
-        <hr>
+        .custom-container {
+            width: 90%; /* Adjust the percentage as needed */
+            max-width: 1200px; /* Set a max-width if you want */
+        }
+    </style>
 
-    </div>
+    <main class="layout layout--3">
+        <div class="container">
+
+            <!-- Categories Start -->
+            {% include 'base/categories_component.html' %}
+            <!-- Categories End -->
+
+            <div class="custom-container" style="margin: 20px 20px">
+
+                <div class="row">
+
+                    <!-- LEFT COLUMN -->
+                    <div class="col-md-7">
+
+                        <!-- IMAGE OF ITEM -->
+                        <img class="img-fluid rounded mb-3 mb-md-0 ml-lg-5 order-1 order-lg-2"
+     src="{{ item.picture.url }}"
+     style="width: 300px; height: 200px; margin: 5px; border: 10px solid;"
+     alt="No Image Available for {{ item.name }}">
+
+                        <br/><br/><br/>
+                        <div class="comment-box">
+                            <div class="container desc">
+                                <div class="row">
+                                    <div class="col-11">
+                                        <dt class="col-sm-4 mb-3 d-block " style="color: #e5e5e5;">Description:</dt>
+                                        <dd class="col-sm-12" style="word-wrap: break-word; margin: 0px;">{{ item.description }}</dd>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- COMMENT SECTION -->
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-11">
+                                    <div class="comments">
+
+                                        <!-- ADD COMMENTS -->
+                                        {% if user.username %}
+                                            <div class="comment-box add-comment">
+                                                <span class="commenter-name">
+                                                    <form action="" method="POST">
+                                                        {% csrf_token %}
+                                                        <input type="text" name="comment" placeholder="Comment here..." step="0.5" required />
+                                                        <button type="submit" class="btn btn-lg btn-warning btn-block" style="background-color: #71c6dd;">Comment</button>
+                                                    </form>
+                                                </span>
+                                            </div>
+                                        {% else %}
+                                        {% endif %}
+
+                                        <!-- TOGGLE TO HIDE/SHOW COMMENTS -->
+                                        <p>
+                                            <a data-toggle="collapse" href="#multiCollapseExample1" role="button" aria-expanded="false" aria-controls="multiCollapseExample1">
+                                                <div class="comments-details">
+                                                    <span class="total-comments comments-sort">{{ comments_count }}&nbsp; Comments</span>
+                                                </div>
+                                            </a>
+                                        </p>
+
+                                        <!-- LOOP TO SHOW ALL COMMENTS -->
+                                        <div class="panel-collapse collapse show" id="multiCollapseExample1">
+                                            {% for comment in comments %}
+                                                <div class="comment-box">
+                                                    <div class="avatar  avatar--medium">
+                                                        <img src="{{ comment.user.avatar.url }}" >
+                                                    </div>
+                                                    <span class="commenter-name">
+                                                        <strong>{{ comment.user.username }}</strong>
+                                                        <span class="comment-time">{{ comment.created }}</span>
+                                                    </span>
+                                                    <p class="comment-txt more">{{ comment.comment }}</p>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN -->
+                    <div class="col-md-5">
+                        <h1 style="margin-bottom: 30px; word-wrap: break-word; color: #e5e5e5;">{{ item.name }}</h1>
+
+                        <!-- PRODUCT DETAILS -->
+                        <dl class="row">
+                            <dt class="col-sm-7 mb-3 d-block" style="color: #e5e5e5;">Current Price:</dt>
+                            <dd class="col-sm-4"><strong>${{ item.price }}</strong></dd>
+
+                            <dt class="col-sm-7 mb-3 d-block " style="color: #e5e5e5;">Number of Bids:</dt>
+                            {% if numeber_of_bids is 0 %}
+                                <dd class="col-sm-5" >No bids yet</dd>
+                            {% else %}
+                                <dd class="col-sm-4">{{ numeber_of_bids }}</dd>
+                            {% endif %}
+
+                            <dt class="col-sm-7 mb-3 d-block " style="color: #e5e5e5;">Category:</dt>
+                            <dd class="col-sm-4">{{ item.category }}</dd>
+
+                            <dt class="col-sm-7 mb-3 d-block " style="color: #e5e5e5;">Listed by:</dt>
+                            <dd class="col-sm-4">{{ item.artist }}</dd>
+
+                            <dt class="col-sm-7 mb-3 d-block " style="color: #e5e5e5;">Date Posted:</dt>
+                            <dd class="col-sm-5">{{ item.created }}</dd>
+
+                            <dt class="col-sm-7 mb-3 d-block " style="color: #e5e5e5;">Highest Bid:</dt>
+                            <dd class="col-sm-5">{{ highest_price_bid }}</dd>
+                        </dl>
+
+                        <!-- SUBMIT BID FORM -->
+                        {% if user.username %}
+                            <form action="" method="POST">
+                                <div>
+                                    {% csrf_token %}
+                                    <input type="number" name="bid" placeholder="Enter a number..." step="0.5" required />
+                                    <button class="btn btn-lg btn-warning btn-block text-uppercase" style="background-color: #71c6dd;" type="submit">Submit</button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <a href="{% url 'register' %}">
+                                <button class="btn btn-lg btn-warning btn-block text-uppercase" style="background-color: #71c6dd; font-size: 80%; border-radius: 5rem; letter-spacing: .1rem; font-weight: bold; padding: 1rem; transition: all 0.2s;">
+                                    Register now!
+                                </button>
+                            </a>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Artists Start -->
+            {% include 'base/artists_component.html' %}
+            <!-- Artists End -->
+        </div>
+    </main>
 {% endblock %}

@@ -1,8 +1,22 @@
 {% extends 'main.html' %}
 
-
 {% block content %}
   {% load static %}
+  <style>
+    .nav-tabs {
+      display: flex;
+      width: 100%;
+    }
+
+    .nav-item.flex-fill {
+      flex: 1;
+    }
+
+    .nav-link.active {
+      background-color: #696d97;
+      color: #3f4156;
+    }
+  </style>
 
   <main class="profile-page layout layout--3">
     <div class="container">
@@ -19,26 +33,41 @@
             </div>
           </div>
           <div class="profile__info">
-            <h3>{{user.username}}</h3>
+            <h3>{{ user.username }}</h3>
             {% if request.user == user %}
-              <a href="{% url 'update-user'%}" class="btn btn--main btn--pill">Edit Profile</a>
+              <a href="{% url 'update-user' %}" class="btn btn--main btn--pill">Edit Profile</a>
             {% endif %}
           </div>
           <div class="profile__about">
             <h3>About</h3>
             <p>
-              {{user.bio}}
+              {{ user.bio }}
             </p>
           </div>
         </div>
 
         <div class="roomList__header">
           <div>
-            <h2>Art Made by {{user.username}}</a>
-            </h2>
+            <h2>Art Made by {{ user.username }}</h2>
           </div>
         </div>
-        {% include 'base/feed_component.html' %}
+
+        <ul class="nav nav-tabs">
+          <li class="nav-item flex-fill">
+            <a class="nav-link {% if not request.GET.tab or request.GET.tab == 'art' %}active{% endif %}" style="color: #71c6dd; background-color: #3f4156; font-weight: bold;" aria-current="page" href="?tab=art">Art Listed By {{ user.username }}</a>
+          </li>
+          <li class="nav-item flex-fill">
+            <a class="nav-link {% if request.GET.tab == 'collection' %}active{% endif %}" style="color: #71c6dd; background-color: #3f4156; font-weight: bold;" href="?tab=collection">Collection</a>
+          </li>
+        </ul>
+        <br>
+        <div id="tab-content">
+          {% if not request.GET.tab or request.GET.tab == 'art' %}
+            {% include 'base/art_component.html' %}
+          {% elif request.GET.tab == 'collection' %}
+            {% include 'base/collection_component.html' %}
+          {% endif %}
+        </div>
       </div>
       <!-- Room List End -->
 
@@ -47,5 +76,4 @@
       <!-- Activities End -->
     </div>
   </main>
-
 {% endblock %}

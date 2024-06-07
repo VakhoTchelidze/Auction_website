@@ -54,3 +54,14 @@ class Collection(models.Model):
     def __str__(self):
         return f"Owner: {self.owner}, Item: {self.item}, Win Price: {self.win_price}"
 
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    comment = models.TextField(null=True, blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    item = models.ForeignKey(Item, on_delete=models.SET_NULL, null=True)
+
+    class Meta:
+        ordering = ['-created']
+
+    def __str__(self):
+        return f'User - {self.user}, Item - {self.item}, Comment - "{self.comment}"'

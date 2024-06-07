@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from .forms import ItemForm, UserForm, MyUserCreationForm
 
 # Create your views here.
-from .models import Category, User, Item, Bid, Collection
+from .models import Category, User, Item, Bid, Collection, Comment
 from django.db.models import Q
 from django.utils import timezone
 
@@ -13,6 +13,7 @@ from django.contrib.auth import authenticate, login, logout
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.core.files.storage import FileSystemStorage
 
 # from django.contrib.auth.forms import UserCreationForm
 
@@ -48,7 +49,11 @@ def home(request):
     return render(request, 'base\\home.html', context)
 
 def item(request, pk):
+    print(pk)
     item = Item.objects.get(id=int(pk))
+
+    categories = Category.objects.all()
+    artists = User.objects.filter(is_artist=True)
 
     if not item.active:
         return HttpResponse('<h1>This item no longer exists!</h1>')
@@ -59,17 +64,42 @@ def item(request, pk):
     else:
         highest_price_bid = 0
 
+    try:
+        numeber_of_bids = Bid.objects.filter(item__id=int(pk)).count()
+    except:
+        numeber_of_bids = 0
+
+    comments = Comment.objects.filter(item__id=int(pk))
+    comments_count = Comment.objects.filter(item__id=int(pk)).count()
+
 
     if request.method == 'POST':
-        if int(request.POST.get('bid')) > item.price and int(request.POST.get('bid')) > highest_price_bid:
-            bid = Bid.objects.create(
-                bidder = request.user,
-                item = item,
-                bid = request.POST.get('bid')
-            )
-            return redirect('item', pk=item.id)
+        print(request.POST)
+        try:
+            if int(request.POST.get('bid')) > item.price and int(request.POST.get('bid')) > highest_price_bid:
+                bid = Bid.objects.create(
+                    bidder = request.user,
+                    item = item,
+                    bid = request.POST.get('bid')
+                )
+                return redirect('item', pk=item.id)
+        except:
+            pass
+        finally:
+            try:
+                if request.POST.get('comment') is not None:
+                    Comment.objects.create(
+                        user = request.user,
+                        item = item,
+                        comment = request.POST.get('comment')
+                    )
 
-    context = {'item': item, 'highest_price_bid': highest_price_bid}
+                    return redirect('item', pk=item.id)
+            except:
+                pass
+
+    context = {'item': item, 'highest_price_bid': highest_price_bid, 'categories': categories, 'artists': artists, 'numeber_of_bids': numeber_of_bids,
+               'comments': comments, 'comments_count': comments_count}
     return render(request, 'base\\item.html', context)
 
 def login_page(request):
@@ -118,9 +148,10 @@ def user_profile(request,pk):
     categories = Category.objects.all()
     artists = User.objects.filter(is_artist=True)
     items = user.item_set.all()
+    collection = Collection.objects.filter(owner__id=int(pk))
 
 
-    context = {'user':user, 'categories':categories, 'artists':artists, 'items': items}
+    context = {'user':user, 'categories':categories, 'artists':artists, 'items': items, 'collection': collection}
     return render(request, 'base/profile.html', context)
 
 @login_required(login_url='login')
@@ -142,38 +173,39 @@ def create_item(request):
     form = ItemForm()
     categories = Category.objects.all()
     if request.method == 'POST':
-        category_name = request.POST.get('category')
-        category, created = Category.objects.get_or_create(name=category_name)
-        Item.objects.create(
-            artist = request.user,
-            category = category,
-            name = request.POST.get('name'),
-            description=request.POST.get('description'),
-            price =  request.POST.get('price')
-            picture = request.POST.get('price')
-        )
-            return redirect('home')
+        try:
+            uploaded_picture = request.FILES['picture']
+            fs = FileSystemStorage()
+            fs.save(uploaded_picture.name, uploaded_picture)
+            print(uploaded_picture)
+        except:
+            uploaded_picture = None
+
+        if uploaded_picture is None:
+            category_name = request.POST.get('category')
+            category, created = Category.objects.get_or_create(name=category_name)
+            item = Item.objects.create(
+                artist = request.user,
+                category = category,
+                name = request.POST.get('name'),
+                description=request.POST.get('description'),
+                price =  request.POST.get('price')
+            )
         else:
-            messages.error(request, 'Error')
-            print(request.POST)
+            category_name = request.POST.get('category')
+            category, created = Category.objects.get_or_create(name=category_name)
+            item = Item.objects.create(
+                artist=request.user,
+                category=category,
+                name=request.POST.get('name'),
+                description=request.POST.get('description'),
+                price=request.POST.get('price'),
+                picture = uploaded_picture
+            )
+
+
+        return redirect('home')
+
 
     context = {'form': form, 'categories': categories}
     return render(request, 'base/item_form.html', context)
-
-# @login_required(login_url='login')
-# def create_item(request):
-#     if request.method == 'POST':
-#         form = ItemForm(request.POST, request.FILES)  # Ensure both POST data and FILES are passed to the form
-#         if form.is_valid():
-#             category_name = form.cleaned_data['category']
-#             category, created = Category.objects.get_or_create(name=category_name)
-#             item = form.save(commit=False)
-#             item.artist = request.user
-#             item.category = category
-#             item.save()
-#             return redirect('home')
-#     else:
-#         form = ItemForm()
-#     categories = Category.objects.all()
-#     context = {'form': form, 'categories': categories}
-#     return render(request, 'base/item_form.html', context)

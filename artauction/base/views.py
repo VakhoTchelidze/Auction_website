@@ -209,3 +209,17 @@ def create_item(request):
 
     context = {'form': form, 'categories': categories}
     return render(request, 'base/item_form.html', context)
+
+
+@login_required(login_url='login')
+def delete_item(request, pk):
+    item = Item.objects.get(id=pk)
+
+    if request.user != item.artist:
+        return HttpResponse('<h1>You do not have permission to delete Item</h1>')
+
+    if request.method == 'POST':
+        item.delete()
+        return redirect('home')
+
+    return render(request, 'base/delete.html', {'obj': item})
